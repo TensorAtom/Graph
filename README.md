@@ -9,5 +9,3 @@ The graphic elements of this project refer to the **Canvas** of tkinter (Python 
 ## Reference
 
 - [Computer Graphics from scratch](https://gabrielgambetta.com/computer-graphics-from-scratch/introduction.html) 👉 [Github](https://github.com/ggambetta/computer-graphics-from-scratch)
-- [GraphiCon图形控](https://zhuanlan.zhihu.com/graphicon)
-- [图形学笔记](https://zhuanlan.zhihu.com/cgnotes)
