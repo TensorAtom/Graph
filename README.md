@@ -6,6 +6,20 @@ The goal is to build a Tensor-based computer graphics library that focuses on th
 
 The graphic elements of this project refer to the **Canvas** of tkinter (Python 3.7 or later). The code implementation principle and the instruction manual can refer to [tutorial](https://github.com/TensorAtom/tutorial/tree/master/Graph/README.md) in this project.
 
+## PyPI support available
+
+You can install the latest version using the following command:
+
+```sh
+$ pip install graph-tensor
+```
+
+The following command is used when called:
+
+```python
+import graph_tensor
+```
+
 ## Reference
 
 - [Computer Graphics from scratch](https://gabrielgambetta.com/computer-graphics-from-scratch/introduction.html) 👉 [Github](https://github.com/ggambetta/computer-graphics-from-scratch)
