@@ -5,13 +5,12 @@ class Meta(Canvas):
     '''Graphic elements are composed of segments, rectangles, ellipses, and arcs.
     '''
 
-    def __init__(self, master=None, cnf={}, line_width=2, **kw):
+    def __init__(self, master=None, cnf={}, **kw):
         '''The base class of all graphics frames.
         
-        :param line_width: The width of the graphic element.
+        :param master: a widget of tkinter or tkinter.ttk.
         '''
         super().__init__(master, cnf, **kw)
-        self.line_width = line_width
 
     def layout(self):
         '''Layout graphic elements with Grid'''
@@ -22,7 +21,7 @@ class Meta(Canvas):
         self.grid(column=0, row=0, sticky='nwes')
 
     def draw_graph(self, direction, graph_type='Rectangle', 
-                   color='blue', arc_style='arc',
+                   color='blue', line_width=1, arc_style='arc',
                    fill=None, dash=None):
         '''Draw basic graphic elements.
         
@@ -33,11 +32,12 @@ class Meta(Canvas):
         :param graph_type: Types of graphic elements.
             (str) 'Rectangle', 'Oval', 'Line'(That is, segment).
         :param color: The color of the graphic element.
+        :param line_width: The width of the graphic element.
         :param arc_style: Style of the arc in {'arc', 'chord', or 'pieslice'}.
         :param fill: Color of the inner fill of the drawing.
         '''
         kw = {
-            'width': self.line_width,
+            'width': line_width,
             'outline': color,
             'dash': dash
         }
@@ -48,4 +48,4 @@ class Meta(Canvas):
         elif graph_type == 'Arc':
             self.create_arc(direction, style=arc_style, **kw)
         elif graph_type == 'Line':
-            self.create_line(direction, fill=color, width=self.line_width, dash=dash)
+            self.create_line(direction, fill=color, width=line_width, dash=dash)
