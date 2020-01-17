@@ -20,9 +20,9 @@ class Meta(Canvas):
         # Layout canvas space
         self.grid(column=0, row=0, sticky='nwes')
 
-    def draw_graph(self, direction, graph_type='Rectangle', 
+    def draw_graph(self, direction, graph_type='Rectangle',
                    color='blue', line_width=1, arc_style='arc',
-                   fill=None, dash=None):
+                   tags=None, fill=None, dash=None):
         '''Draw basic graphic elements.
         
         :param direction: Specifies the orientation of the graphic element. 
@@ -35,17 +35,28 @@ class Meta(Canvas):
         :param line_width: The width of the graphic element.
         :param arc_style: Style of the arc in {'arc', 'chord', or 'pieslice'}.
         :param fill: Color of the inner fill of the drawing.
+        :return: Unique identifier solely for graphic elements.
         '''
         kw = {
             'width': line_width,
             'outline': color,
             'dash': dash
         }
+        tag_collect = {'graph', tags}
         if graph_type == 'Rectangle':
-            self.create_rectangle(direction, **kw)
+            tag_collect.add('rectangle')
+            graph_id = self.create_rectangle(
+                direction, tags=tuple(tag_collect), **kw)
         elif graph_type == 'Oval':
-            self.create_oval(direction, **kw)
+            tag_collect.add('oval')
+            graph_id = self.create_oval(
+                direction, tags=tuple(tag_collect), **kw)
         elif graph_type == 'Arc':
-            self.create_arc(direction, style=arc_style, **kw)
+            tag_collect.add('arc')
+            graph_id = self.create_arc(
+                direction, style=arc_style, tags=tuple(tag_collect), **kw)
         elif graph_type == 'Line':
-            self.create_line(direction, fill=color, width=line_width, dash=dash)
+            tag_collect.add('line')
+            graph_id = self.create_line(direction, fill=color,
+                                        width=line_width, tags=tuple(tag_collect), dash=dash)
+        return graph_id
