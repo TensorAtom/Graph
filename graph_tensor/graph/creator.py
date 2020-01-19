@@ -1,10 +1,19 @@
 class GraphCustom:
+    '''Customize a graphic'''
     def __init__(self, graph_type='Rectangle', color='blue'):
+        '''Customize a graphic
+
+        :param graph_type: Type name of graphic object.
+            (str) It contains 'Rectangle'(⬜), 'Oval'(⚪), 'Line'(⸺),
+            'RectanglePoint'(⯀), 'Oval Point'(●).
+        :param color: It is the color of the graph(line) of the drawing.
+        '''
         self._graph_type = graph_type
         self._color = color
 
     @property
     def graph_type(self):
+        '''Converts the type of the drawing to the type of Canvas.'''
         if 'Rectangle' in self._graph_type:
             return 'Rectangle'
         elif 'Oval' in self._graph_type:
@@ -16,27 +25,42 @@ class GraphCustom:
 
     @graph_type.setter
     def graph_type(self, value):
+        '''Change the type of graph.'''
         self._graph_type = value
 
     @property
     def color(self):
+        '''Sets the color of the drawing.'''
         return self._color
 
     @color.setter
     def color(self, value):
+        '''Change the color of the drawing.'''
         self._color = value
+
+    @property
+    def graph_params(self):
+        '''Set several commonly used graphics parameters.'''
+        return {
+            'line_width': 1,
+            'tags': self._graph_type,
+            'fill': 'red' if 'Point' in self._graph_type else None
+        }
 
 
 class SelectorMeta(GraphCustom):
+    '''Sets the icon style of the graphics selector.'''
     def __init__(self, meta, graph_type='Rectangle', color='blue'):
         super().__init__(graph_type, color)
-        self.x, self.y = 30, 18  # 图标的起始位置
+        self.x, self.y = 30, 18  # The starting position of the icon
+        # Color selection list of graphics
         self.color_options = 'red', 'blue', 'black', 'white', 'green'
         self.colors(meta)
         self.graphs(meta)
 
     @property
     def graph_elements(self):
+        '''Set several commonly used graphics parameters.'''
         return {
             'Rectangle': '⬜',
             'Oval': '⚪',
@@ -47,7 +71,7 @@ class SelectorMeta(GraphCustom):
 
     @property
     def direction(self):
-        '''矩形框的起始方向'''
+        '''The starting direction of the rectangular box'''
         return self.x, self.y, self.x+20, self.y+20
 
     def move_color(self, k):
@@ -91,7 +115,9 @@ class Selector(SelectorMeta):
     def __init__(self, meta, graph_type='Rectangle', color='blue'):
         super().__init__(meta, graph_type, color)
         [self.color_bind(meta, color) for color in self.color_options]
-        [self.graph_type_bind(meta, graph_type) for graph_type in self.graph_elements]
+        [self.graph_type_bind(meta, graph_type)
+         for graph_type in self.graph_elements]
+        meta.dtag('all')
 
     def set_color(self, new_color):
         self._color = new_color
@@ -100,7 +126,8 @@ class Selector(SelectorMeta):
         self._graph_type = new_graph_type
 
     def color_bind(self, canvas, color):
-        canvas.tag_bind(color, '<1>',  lambda e: self.set_color(color))
+        canvas.tag_bind(color, '<1>', lambda e: self.set_color(color))
 
     def graph_type_bind(self, canvas, graph_type):
-        canvas.tag_bind(graph_type, '<1>', lambda e: self.set_graph_type(graph_type))
+        canvas.tag_bind(graph_type, '<1>',
+                        lambda e: self.set_graph_type(graph_type))

@@ -12,7 +12,7 @@ class Meta(Canvas):
         '''
         super().__init__(master, cnf, **kw)
 
-    def layout(self, row=0, column=0, weight=1):
+    def layout(self, row=0, column=0):
         '''Layout graphic elements with Grid'''
         # Layout canvas space
         self.grid(row=row, column=column, sticky='nwes')
