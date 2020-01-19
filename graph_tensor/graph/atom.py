@@ -12,13 +12,10 @@ class Meta(Canvas):
         '''
         super().__init__(master, cnf, **kw)
 
-    def layout(self):
+    def layout(self, row=0, column=0, weight=1):
         '''Layout graphic elements with Grid'''
-        # Makes the master widget change as the canvas size
-        self.master.columnconfigure(0, weight=1)
-        self.master.rowconfigure(0, weight=1)
         # Layout canvas space
-        self.grid(column=0, row=0, sticky='nwes')
+        self.grid(row=row, column=column, sticky='nwes')
 
     def draw_graph(self, direction, graph_type='Rectangle',
                    color='blue', line_width=1, arc_style='arc',
