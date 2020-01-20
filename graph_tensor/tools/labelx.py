@@ -8,6 +8,7 @@ class Graph(Drawing):
     def __init__(self, master=None, cnf={}, selector=None, **kw):
         super().__init__(master, cnf, selector, **kw)
         self._create_variable()
+        self._menu_init()
         self.create_menu()
         self._reset_bind()
 
@@ -31,16 +32,10 @@ class Graph(Drawing):
             '●': 'OvalPoint'
         }
 
-    def create_menu(self):
-        self.master.option_add('*tearOff', False)  # 设定菜单不能移除窗口
-        menu_bar = Menu(self.master)  # 创建菜单栏
-        self.master['menu'] = menu_bar  # 或者 root.config(menu=menubar)
-
-        # 创建菜单
+    def _create_edit_menu(self, menu_bar):
         edit_bar = Menu(menu_bar)
         move_menu = Menu(edit_bar)
         delete_menu = Menu(edit_bar)
-        # 添加级联菜单
         menu_bar.add_cascade(label="Edit", menu=edit_bar)
         edit_bar.add_cascade(label="move", menu=move_menu)
         edit_bar.add_cascade(label="delete", menu=delete_menu)
@@ -53,6 +48,15 @@ class Graph(Drawing):
             label=f"move/{option}", **kw_menu) for option in self.tags_dict]
         [delete_menu.add_radiobutton(
             label=f"delete/{option}", **kw_menu) for option in self.tags_dict]
+
+    def _menu_init(self):
+        # The settings menu cannot pop up from the window.
+        self.master.option_add('*tearOff', False)
+
+    def create_menu(self):
+        menu_bar = Menu(self.master)
+        self.master['menu'] = menu_bar  # Or `root.config(menu=menubar)`
+        self._create_edit_menu(menu_bar)
 
     def move_strides(self, event):
         x, y = self.x, self.y
