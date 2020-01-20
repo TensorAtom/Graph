@@ -1,4 +1,4 @@
-from .atom import Meta
+from graph.atom import Meta
 
 
 class Drawing(Meta):
@@ -17,6 +17,10 @@ class Drawing(Meta):
         self.selector = selector
         self.master.title('Computer Vision')
         self._init_params()
+        self._draw_bind()
+        
+    def _draw_bind(self):
+        self.selector.graph_type = 'Rectangle'
         self.bind("<1>", self.update_xy)
         self.bind("<ButtonRelease-1>", self.draw)
 
@@ -80,7 +84,7 @@ class TrajectoryDrawing(Drawing):
 
 def test():
     from tkinter import Tk
-    from .creator import Selector
+    from .graph.creator import Selector
     root = Tk()
     icon_meta = Meta(root, width=210, height=60)
     selector = Selector(icon_meta)
