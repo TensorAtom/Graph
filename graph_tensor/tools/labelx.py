@@ -1,5 +1,6 @@
 from tkinter import StringVar
 from tkinter import Menu, filedialog
+from PIL import Image, ImageTk
 
 from graph.drawing import Drawing
 
@@ -103,31 +104,66 @@ class LabeledGraph(Graph):
 
     def _init_params(self):
         self.x = self.y = 0
-        self.folder_name, self.file_name, self.file_name = None, None, None
+        self.file_name = None
+        self.I = None
+        
+    def select_graph(self, event, edit_option):
+        self.configure(cursor="target")
+        self.update_xy(event)
+        tags = self.tags_dict[edit_option]
+        image_tags = self.find_withtag('image')
+        selected_tags = self.find_withtag(tags)
+        self.selected_tags = set(selected_tags) - set(image_tags)
+    
+    def move_graph(self, event):
+        x_move, y_move = self.move_strides(event)
+        for tag in self.selected_tags:
+            self.move(tag, x_move, y_move)
 
+    def delete_graph(self, event):
+        for tag in self.selected_tags:
+            self.delete(tag)
+            
     def _create_file_menu(self, menu_bar):
         file_bar = Menu(menu_bar)
         image_menu = Menu(file_bar)
         tags_menu = Menu(file_bar)
         menu_bar.add_cascade(label="File", menu=file_bar)
         file_bar.add_radiobutton(
-            label="Seek filename", command=self.seek_filename)
-        file_bar.add_radiobutton(
-            label="Ask folder name", command=self.seek_folder_name)
-        file_bar.add_radiobutton(
-            label="Seek multiple filename", command=self.seek_filenames)
+            label="Seek filename", command=self.load_image)
+        #file_bar.add_radiobutton(label="Ask folder name", command=self.seek_folder_name)
+        #file_bar.add_radiobutton(label="Seek multiple filename", command=self.seek_filenames)
 
     def seek_folder_name(self):
-        self.folder_name = filedialog.askdirectory()
+        return filedialog.askdirectory()
 
     def seek_filename(self):
-        self.file_name = filedialog.askopenfilename()
+        return filedialog.askopenfilename()
 
     def seek_filenames(self):
-        self.file_names = filedialog.askopenfilenames()
+        return filedialog.askopenfilenames()
 
     def create_menu(self):
         menu_bar = Menu(self.master)
         self.master['menu'] = menu_bar  # Or `root.config(menu=menubar)`
         self._create_file_menu(menu_bar)
         self._create_edit_menu(menu_bar)
+        
+    def name2image(self, image_name):
+        I = Image.open(image_name)
+        image_file = ImageTk.PhotoImage(I)
+        return ImageTk.PhotoImage(I)
+    
+    def update_file(self):
+        self.file_name = self.seek_filename()
+        
+    def update_image(self):
+        self.I = self.name2image(self.file_name)
+        
+    def load_image(self):
+        self.update_file()
+        self.update_image()
+        self.reload_image()
+        
+    def reload_image(self):
+        self.create_image(0, 0, anchor='nw', image=self.I, tags='image')
