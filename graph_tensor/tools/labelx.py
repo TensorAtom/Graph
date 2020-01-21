@@ -1,5 +1,5 @@
 from tkinter import StringVar
-from tkinter import Menu
+from tkinter import Menu, filedialog
 
 from graph.drawing import Drawing
 
@@ -84,7 +84,6 @@ class Graph(Drawing):
     def bind_graph(self):
         self.unbind('<ButtonRelease-1>')
         self.unbind('<1>')
-
         edit = self.edit_var.get()
         if edit == 'drawing':
             self._reset_bind()
@@ -96,3 +95,39 @@ class Graph(Drawing):
             self.bind('<1>', lambda event: self.select_graph(
                 event, edit.split('/')[1]))
             self.bind('<ButtonRelease-1>', self.delete_graph)
+
+
+class LabeledGraph(Graph):
+    def __init__(self, master=None, cnf={}, selector=None, **kw):
+        super().__init__(master, cnf, selector, **kw)
+
+    def _init_params(self):
+        self.x = self.y = 0
+        self.folder_name, self.file_name, self.file_name = None, None, None
+
+    def _create_file_menu(self, menu_bar):
+        file_bar = Menu(menu_bar)
+        image_menu = Menu(file_bar)
+        tags_menu = Menu(file_bar)
+        menu_bar.add_cascade(label="File", menu=file_bar)
+        file_bar.add_radiobutton(
+            label="Seek filename", command=self.seek_filename)
+        file_bar.add_radiobutton(
+            label="Ask folder name", command=self.seek_folder_name)
+        file_bar.add_radiobutton(
+            label="Seek multiple filename", command=self.seek_filenames)
+
+    def seek_folder_name(self):
+        self.folder_name = filedialog.askdirectory()
+
+    def seek_filename(self):
+        self.file_name = filedialog.askopenfilename()
+
+    def seek_filenames(self):
+        self.file_names = filedialog.askopenfilenames()
+
+    def create_menu(self):
+        menu_bar = Menu(self.master)
+        self.master['menu'] = menu_bar  # Or `root.config(menu=menubar)`
+        self._create_file_menu(menu_bar)
+        self._create_edit_menu(menu_bar)
