@@ -1,4 +1,4 @@
-from tkinter import StringVar
+from tkinter import StringVar, ttk
 from tkinter import Menu, filedialog
 from PIL import Image, ImageTk
 
@@ -98,7 +98,7 @@ class Graph(Drawing):
             self.bind('<ButtonRelease-1>', self.delete_graph)
 
 
-class LabeledGraph(Graph):
+class LabeledGraphMeta(Graph):
     def __init__(self, master=None, cnf={}, selector=None, **kw):
         super().__init__(master, cnf, selector, **kw)
 
@@ -106,7 +106,7 @@ class LabeledGraph(Graph):
         self.x = self.y = 0
         self.file_name = None
         self.I = None
-        
+
     def select_graph(self, event, edit_option):
         self.configure(cursor="target")
         self.update_xy(event)
@@ -114,7 +114,7 @@ class LabeledGraph(Graph):
         image_tags = self.find_withtag('image')
         selected_tags = self.find_withtag(tags)
         self.selected_tags = set(selected_tags) - set(image_tags)
-    
+
     def move_graph(self, event):
         x_move, y_move = self.move_strides(event)
         for tag in self.selected_tags:
@@ -123,7 +123,7 @@ class LabeledGraph(Graph):
     def delete_graph(self, event):
         for tag in self.selected_tags:
             self.delete(tag)
-            
+
     def _create_file_menu(self, menu_bar):
         file_bar = Menu(menu_bar)
         image_menu = Menu(file_bar)
@@ -148,22 +148,39 @@ class LabeledGraph(Graph):
         self.master['menu'] = menu_bar  # Or `root.config(menu=menubar)`
         self._create_file_menu(menu_bar)
         self._create_edit_menu(menu_bar)
-        
+
     def name2image(self, image_name):
         I = Image.open(image_name)
         image_file = ImageTk.PhotoImage(I)
         return ImageTk.PhotoImage(I)
-    
+
     def update_file(self):
         self.file_name = self.seek_filename()
-        
+
     def update_image(self):
         self.I = self.name2image(self.file_name)
-        
+
     def load_image(self):
         self.update_file()
         self.update_image()
         self.reload_image()
-        
+
     def reload_image(self):
         self.create_image(0, 0, anchor='nw', image=self.I, tags='image')
+
+
+class LabeledGraph(LabeledGraphMeta):
+    def __init__(self, master=None, cnf={}, selector=None, **kw):
+        super().__init__(master, cnf, selector, **kw)
+        self.horizontal_scrollbar = ttk.Scrollbar(orient="horizontal")
+        self.vertical_scrollbar = ttk.Scrollbar(orient="vertical")
+        self.configure(xscrollcommand=self.horizontal_scrollbar.set)
+        self.configure(yscrollcommand=self.vertical_scrollbar.set)
+        self.horizontal_scrollbar['command'] = self.xview
+        self.vertical_scrollbar['command'] = self.yview
+
+    def layout(self, row=0, column=0):
+        '''The internal layout.'''
+        self.grid(row=row, column=column, sticky='nwes')
+        self.horizontal_scrollbar.grid(row=row+1, column=column, sticky='we')
+        self.vertical_scrollbar.grid(row=row, column=column+1, sticky='ns')
