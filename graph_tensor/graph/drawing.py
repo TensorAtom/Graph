@@ -84,7 +84,7 @@ class TrajectoryDrawing(Drawing):
 
 def test():
     from tkinter import Tk
-    from .graph.creator import Selector
+    from graph.creator import Selector
     root = Tk()
     icon_meta = Meta(root, width=210, height=60)
     selector = Selector(icon_meta)
