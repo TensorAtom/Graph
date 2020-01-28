@@ -1,4 +1,4 @@
-from .atom import Meta
+from graph.atom import Meta
 
 
 class Drawing(Meta):
@@ -17,6 +17,10 @@ class Drawing(Meta):
         self.selector = selector
         self.master.title('Computer Vision')
         self._init_params()
+        self._draw_bind()
+        
+    def _draw_bind(self):
+        self.selector.graph_type = 'Rectangle'
         self.bind("<1>", self.update_xy)
         self.bind("<ButtonRelease-1>", self.draw)
 
@@ -78,16 +82,20 @@ class TrajectoryDrawing(Drawing):
         self.bind("<Button1-Motion>", self.draw)
 
 
-if __name__ == '__main__':
+def test():
     from tkinter import Tk
-    from .creator import Selector
+    from .graph.creator import Selector
     root = Tk()
     icon_meta = Meta(root, width=210, height=60)
     selector = Selector(icon_meta)
-    meta = Drawing(root, selector=selector, background='white')
+    meta = TrajectoryDrawing(root, selector=selector, background='white')
     # Makes the master widget change as the canvas size
     root.columnconfigure(0, weight=1)
     root.rowconfigure(0, weight=1)
     meta.layout()
     icon_meta.layout(0, 1)
     root.mainloop()
+
+
+if __name__ == '__main__':
+    test()

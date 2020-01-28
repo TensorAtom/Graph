@@ -118,6 +118,7 @@ class Selector(SelectorMeta):
         [self.graph_type_bind(meta, graph_type)
          for graph_type in self.graph_elements]
         meta.dtag('all')
+        self.meta = meta
 
     def set_color(self, new_color):
         self._color = new_color
