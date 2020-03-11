@@ -1,8 +1,10 @@
-from tkinter import StringVar, ttk
+from tkinter import StringVar, ttk, Tk
 from tkinter import Menu, filedialog
 from PIL import Image, ImageTk
 
-from graph.drawing import Drawing
+from graph.atom import Meta, Drawing
+from graph.atom import 
+from graph.creator import Selector
 
 
 class Graph(Drawing):
@@ -168,19 +170,43 @@ class LabeledGraphMeta(Graph):
     def reload_image(self):
         self.create_image(0, 0, anchor='nw', image=self.I, tags='image')
 
+    
+class LabeledGraph(Tk):
+    def __init__(self):
+        super().__init__()
+        self._set_scroll()
+        self._create_canvas()
+        self._scroll_command()
+        #self.frame = ttk.Frame(self.canvas)
+        #self.canvas.create_window((0, 0), window=self.frame, anchor='nw')
+        self.layout()
+        self.bind("<Configure>", self.resize)
+        self.update_idletasks()
+        self.minsize(self.winfo_width(), self.winfo_height())
 
-class LabeledGraph(LabeledGraphMeta):
-    def __init__(self, master=None, cnf={}, selector=None, **kw):
-        super().__init__(master, cnf, selector, **kw)
-        self.horizontal_scrollbar = ttk.Scrollbar(orient="horizontal")
-        self.vertical_scrollbar = ttk.Scrollbar(orient="vertical")
-        self.configure(xscrollcommand=self.horizontal_scrollbar.set)
-        self.configure(yscrollcommand=self.vertical_scrollbar.set)
-        self.horizontal_scrollbar['command'] = self.xview
-        self.vertical_scrollbar['command'] = self.yview
+    def _set_scroll(self):
+        self.scroll_x = ttk.Scrollbar(orient='horizontal')
+        self.scroll_y = ttk.Scrollbar(orient='vertical')
 
-    def layout(self, row=0, column=0):
-        '''The internal layout.'''
-        self.grid(row=row, column=column, sticky='nwes')
-        self.horizontal_scrollbar.grid(row=row+1, column=column, sticky='we')
-        self.vertical_scrollbar.grid(row=row, column=column+1, sticky='ns')
+    def _create_canvas(self):
+        self.icon_meta = Meta(self, width=210, height=60)
+        self.icon_creator = Selector(self.icon_meta)
+        self.canvas = LabeledGraphMeta(self, selector=self.icon_creator, background='white')
+        self.canvas.configure(width=800, height=600)
+        self.canvas.configure(xscrollcommand=self.scroll_x.set, yscrollcommand=self.scroll_y.set)
+
+    def _scroll_command(self):
+        self.scroll_x['command'] = self.canvas.xview
+        self.scroll_y['command'] = self.canvas.yview
+
+    def layout(self):
+        self.canvas.grid(row=0, column=0, sticky="nswe")
+        self.scroll_x.grid(row=1, column=0, sticky="we")
+        self.scroll_y.grid(row=0, column=1, sticky="ns")
+        self.icon_meta.layout(0, 2)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+
+    def resize(self, event):
+        region = self.canvas.bbox('all')
+        self.canvas.configure(scrollregion=region)
