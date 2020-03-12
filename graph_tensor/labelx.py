@@ -48,8 +48,6 @@ class LabeledGraph(Window):
         self._set_scroll()
         self._create_canvas()
         self._scroll_command()
-        #self.frame = ttk.Frame(self.canvas)
-        #self.canvas.create_window((0, 0), window=self.frame, anchor='nw')
         self.layout()
         self.bind("<Configure>", self.resize)
         self.update_idletasks()
@@ -74,6 +72,13 @@ class LabeledGraph(Window):
         self.canvas = LabeledGraphMeta(self, self.home, self.icon_creator, background='lightgray')
         self.canvas.configure(width=800, height=600)
         self.canvas.configure(xscrollcommand=self.scroll_x.set, yscrollcommand=self.scroll_y.set)
+        self.canvas.bind("<3>", self.mouse_motion)
+
+    def mouse_motion(self, event):
+        x = event.x
+        y = event.y
+        text = f"coordinate: ({x}, {y})|| {self.canvas.canvasx(x), self.canvas.canvasy(y)}"
+        self.canvas.coord_var.set(text)
 
     def _scroll_command(self):
         self.scroll_x['command'] = self.canvas.xview

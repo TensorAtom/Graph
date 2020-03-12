@@ -101,12 +101,13 @@ class Drawing(Meta):
 
     def update_xy(self, event):
         '''Press the left mouse button to record the coordinates of the left mouse button'''
-        self.x = event.x
-        self.y = event.y
+        self.x = self.canvasx(event.x)
+        self.y = self.canvasy(event.y)
 
     def get_bbox(self, event):
         x0, y0 = self.x, self.y  # The upper-left coordinates of the graph
-        x1, y1 = event.x, event.y  # Lower-right coordinates of the graph
+        self.update_xy(event)
+        x1, y1 = self.x, self.y  # Lower-right coordinates of the graph
         bbox = x0, y0, x1, y1
         return bbox
 
