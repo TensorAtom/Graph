@@ -1,4 +1,4 @@
-from tkinter import Canvas
+from tkinter import Canvas, StringVar, ttk
 
 
 class Meta(Canvas):
@@ -73,18 +73,23 @@ class Drawing(Meta):
         ovals (circular points), and segments.
     '''
 
-    def __init__(self, master=None, cnf={}, selector=None, **kw):
+    def __init__(self, home, selector, cnf={}, **kw):
         '''Click the left mouse button to start painting, release
             the left mouse button to complete the painting.
 
-        :param selector: The graphics selector, which is an instance of Selector.
+        :param selector: The graphics selector, which is an instance of graph.creator.Selector.
         '''
-        super().__init__(master, cnf, **kw)
-        self.master = master
+        super().__init__(home, cnf, **kw)
+        self.home = home # Instance of ttk.Frame
+        self.coord_var = StringVar()
+        self.coord_label = ttk.Label(self.home, textvariable = self.coord_var)
         self.selector = selector
-        self.master.title('Computer Vision')
         self._init_params()
         self._draw_bind()
+
+    def layout(self):
+        self.pack(side='top', expand='yes', fill='both')
+        self.coord_label.pack(side='bottom', anchor='w')
         
     def _draw_bind(self):
         self.selector.graph_type = 'Rectangle'
@@ -110,6 +115,7 @@ class Drawing(Meta):
         self.configure(cursor="arrow")
         bbox = self.get_bbox(event)
         self.create_graph(bbox)
+        self.coord_var.set(f'coordinate: {bbox[:2]} to {bbox[2:]}')
 
     @property
     def graph_params(self):
@@ -132,10 +138,6 @@ class Drawing(Meta):
         else:
             self.draw_graph(bbox, graph_type=self.selector.graph_type,
                             color=self.selector.color, **self.graph_params)
-
-    def layout(self, row=0, column=0):
-        '''The internal layout.'''
-        self.grid(row=row, column=column, sticky='nwes')
 
 
 class TrajectoryDrawing(Drawing):
