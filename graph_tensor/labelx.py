@@ -1,4 +1,5 @@
-from tkinter import Tk, ttk, StringVar, Menu
+from tkinter import Menu, StringVar, filedialog
+from tkinter import Tk, ttk
 
 from graph.creator import Selector
 from graph.atom import Meta
@@ -64,15 +65,40 @@ class LabeledGraph(Window):
     def _create_canvas(self):
         self.pane = ttk.PanedWindow(self, orient = 'vertical')
         self.select_frame = ttk.LabelFrame(self.pane, text='Select', width=100, height=100)
+        self.mark_frame = ttk.LabelFrame(self.pane, text='Marking', width=100, height=100)
+        self.mark_button = ttk.Button(self.mark_frame, text='Load labels', command=self.load_label)
+        self.label_notebook = ttk.Notebook(self.mark_frame)
         self.info_frame = ttk.LabelFrame(self.pane, text='Info', width=100, height=100)
         self.pane.add(self.select_frame)
         self.pane.add(self.info_frame)
+        self.pane.add(self.mark_frame)
         self.icon_meta = Meta(self.select_frame , width=210, height=60, background='white')
         self.icon_creator = Selector(self.icon_meta)
         self.canvas = LabeledGraphMeta(self, self.home, self.icon_creator, background='lightgray')
         self.canvas.configure(width=800, height=600)
         self.canvas.configure(xscrollcommand=self.scroll_x.set, yscrollcommand=self.scroll_y.set)
         self.canvas.bind("<3>", self.mouse_motion)
+
+    def create_table(self, frame, row, record):
+        name, TYPE, table = record.split('|')
+        select_type = 'ttk.Radiobutton' if TYPE == '0' else 'ttk.Checkbutton'
+        table = table.split(',')
+        ttk.Label(frame, text=name).grid(row=row, column=0)
+        for k, s in enumerate(table):
+            var = StringVar()
+            eval(select_type)(frame, text=s, variable=var).grid(sticky='we', row=row, column=k+1)
+
+    def load_label(self):
+        label_file = filedialog.askopenfilename()
+        with open(label_file, 'rb') as fp:
+            teach = fp.read().decode()
+        self.label_content = teach.split('## ')
+        for records in self.label_content[1:]:
+            records = records.strip().splitlines()
+            frame = ttk.Frame(self.label_notebook)
+            self.label_notebook.add(frame, text=records[0])
+            for row, record in enumerate(records[4:]):
+                self.create_table(frame, row, record)
 
     def mouse_motion(self, event):
         x = event.x
@@ -90,6 +116,8 @@ class LabeledGraph(Window):
         self.scroll_y.pack(side='right', fill='y')
         self.canvas.layout()
         self.pane.pack(side='right', fill='both')  
+        self.mark_button.grid(row=0, column=0)
+        self.label_notebook.grid(row=1, column=0)
         self.icon_meta.layout(0, 1)
 
     def resize(self, event):
