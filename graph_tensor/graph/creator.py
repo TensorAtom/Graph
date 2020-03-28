@@ -1,134 +1,121 @@
-class GraphCustom:
-    '''Customize a graphic'''
-    def __init__(self, graph_type='Rectangle', color='blue'):
-        '''Customize a graphic
+'''Use help reference at https://www.jianshu.com/p/c6a2b400d0b9
+'''
+from tkinter import ttk, StringVar
 
-        :param graph_type: Type name of graphic object.
-            (str) It contains 'Rectangle'(⬜), 'Oval'(⚪), 'Line'(⸺),
-            'RectanglePoint'(⯀), 'Oval Point'(●).
-        :param color: It is the color of the graph(line) of the drawing.
+from .atom import Meta
+
+
+class Selector(Meta):
+    '''A selection icon that sets the shape and color of the graphic.
+
+    Example:
+    ======================
+    from tkinter import Tk
+    root =Tk()
+    select = Selector(root)
+    select.grid()
+    root.mainloop()
+    '''
+    colors = 'red', 'blue', 'black', 'purple', 'green', 'skyblue', 'yellow', 'white', 'orange', 'pink'
+    shapes = 'rectangle', 'oval', 'line', 'oval_point', 'rectangle_point'
+
+    def __init__(self, master=None, cnf={}, **kw):
+        '''The base class of all graphics frames.
+
+        :param master: a widget of tkinter or tkinter.ttk.
         '''
-        self._graph_type = graph_type
-        self._color = color
+        super().__init__(master, cnf, **kw)
+        self.start, self.end = 15, 50
+        self.create_color()
+        self.create_shape()
+        self.dtag('graph')
 
-    @property
-    def graph_type(self):
-        '''Converts the type of the drawing to the type of Canvas.'''
-        if 'Rectangle' in self._graph_type:
-            return 'Rectangle'
-        elif 'Oval' in self._graph_type:
-            return 'Oval'
-        elif 'Line' in self._graph_type:
-            return 'Line'
-        else:
-            return
+    def create_color(self):
+        '''Set the color selector'''
+        self.create_text((self.start, self.start),
+                         text='color', font='Times 15', anchor='w')
+        self.start += 10
+        for k, color in enumerate(Selector.colors):
+            t = 7+30*(k+1)
+            direction = self.start+t, self.start-20, self.end+t, self.end-20
+            tags = f"color {color}"
+            self.draw_graph('rectangle', direction,
+                            'yellow', tags=tags, fill=color)
+        self.dtag('rectangle')
 
-    @graph_type.setter
-    def graph_type(self, value):
-        '''Change the type of graph.'''
-        self._graph_type = value
-
-    @property
-    def color(self):
-        '''Sets the color of the drawing.'''
-        return self._color
-
-    @color.setter
-    def color(self, value):
-        '''Change the color of the drawing.'''
-        self._color = value
-
-    @property
-    def graph_params(self):
-        '''Set several commonly used graphics parameters.'''
-        return {
-            'line_width': 1,
-            'tags': self._graph_type,
-            'fill': 'red' if 'Point' in self._graph_type else None
-        }
+    def create_shape(self):
+        '''Set the shape selector'''
+        self.create_text((self.start-10, self.start+30),
+                         text='shape', font='Times 15', anchor='w')
+        for k, shape in enumerate(Selector.shapes):
+            t = 7+30*(k+1)
+            direction = self.start+t, self.start+20, self.end+t, self.end+20
+            fill = 'blue' if 'point' in shape else 'white'
+            width = 10 if shape == 'line' else 1
+            kw = {
+                'width': width,
+                'fill': fill,
+                'tags': f"shape {shape}"
+            }
+            self.draw_graph(shape.split('_')[0], direction, 'blue', **kw)
 
 
-class SelectorMeta(GraphCustom):
-    '''Sets the icon style of the graphics selector.'''
-    def __init__(self, meta, graph_type='Rectangle', color='blue'):
-        super().__init__(graph_type, color)
-        self.x, self.y = 30, 18  # The starting position of the icon
-        # Color selection list of graphics
-        self.color_options = 'red', 'blue', 'black', 'white', 'green'
-        self.colors(meta)
-        self.graphs(meta)
+class SelectorFrame(ttk.Frame):
+    '''Binding the left mouse button function of the graphics selector to achieve the color and 
+        shape of the graphics change.
 
-    @property
-    def graph_elements(self):
-        '''Set several commonly used graphics parameters.'''
-        return {
-            'Rectangle': '⬜',
-            'Oval': '⚪',
-            'Line': '⸺',
-            'RectanglePoint': '⯀',
-            'OvalPoint': '●'
-        }
+    Example:
+    ===============================================
+    from tkinter import Tk
+    root = Tk()
+    selector = SelectorFrame(root)
+    selector.layout()
+    selector.grid()
+    root.mainloop()
+    '''
 
-    @property
-    def direction(self):
-        '''The starting direction of the rectangular box'''
-        return self.x, self.y, self.x+20, self.y+20
+    def __init__(self, master=None, graph_type='rectangle', color='blue', **kw):
+        '''The base class of all graphics frames.
 
-    def move_color(self, k):
-        return self.x+30*k, self.y-30
+        :param master: a widget of tkinter or tkinter.ttk.
+        :param graph_type: The initial shape value of the graph.
+        :param color: The initial color value of the graph.
+        '''
+        super().__init__(master, **kw)
+        self.color = color
+        self.graph_type = graph_type
+        self.selector = Selector(
+            self, background='lightgreen', width=360, height=80)
+        [self.color_bind(self.selector, color) for color in Selector.colors]
+        [self.graph_type_bind(self.selector, graph_type)
+         for graph_type in Selector.shapes]
+        self.info_var = StringVar()
+        self.info = ttk.Label(self, textvariable=self.info_var)
 
-    def move_graph(self, k):
-        x, y = self.move_color(k)
-        return x, y+30
+    def update_info(self):
+        '''Update info information.'''
+        if self.color or self.graph_type:
+            text = f"You Selected: {self.color},{self.graph_type}"
+            self.info_var.set(text)
 
-    def colors(self, meta):
-        meta.create_text((self.x, self.y), text='color',
-                         fill='black', font='serial 14')
-        [meta.draw_graph(self.direction, 'Rectangle', 'red',
-                         line_width=1, fill=color, tags=color)
-         for color in self.color_options]
-        [meta.move(color, *self.move_color(k))
-         for k, color in enumerate(self.color_options)]
+    def update_color(self, new_color):
+        '''Update color information.'''
+        self.color = new_color
+        self.update_info()
 
-    @property
-    def graph_params(self):
-        return {
-            'line_width': 7 if 'Line' in self._graph_type else 2,
-            'tags': self._graph_type,
-            'fill': 'red' if 'Point' in self._graph_type else 'white'
-        }
-
-    def graphs(self, meta, **params):
-        meta.create_text((self.x, self.y+30), text='graph',
-                         fill='black', font='serial 14')
-        self.color = 'purple'
-        for k, name in enumerate(self.graph_elements):
-            self._graph_type = name
-            params.update(self.graph_params)
-            meta.draw_graph(self.direction,
-                            graph_type=self.graph_type,
-                            color=self.color, **params)
-            meta.move(name, *self.move_graph(k))
-
-
-class Selector(SelectorMeta):
-    def __init__(self, meta, graph_type='Rectangle', color='blue'):
-        super().__init__(meta, graph_type, color)
-        [self.color_bind(meta, color) for color in self.color_options]
-        [self.graph_type_bind(meta, graph_type)
-         for graph_type in self.graph_elements]
-        meta.dtag('all')
-        self.meta = meta
-
-    def set_color(self, new_color):
-        self._color = new_color
-
-    def set_graph_type(self, new_graph_type):
-        self._graph_type = new_graph_type
+    def update_graph_type(self, new_graph_type):
+        '''Update graph_type information.'''
+        self.graph_type = new_graph_type
+        self.update_info()
 
     def color_bind(self, canvas, color):
-        canvas.tag_bind(color, '<1>', lambda e: self.set_color(color))
+        canvas.tag_bind(color, '<1>', lambda e: self.update_color(color))
 
     def graph_type_bind(self, canvas, graph_type):
         canvas.tag_bind(graph_type, '<1>',
-                        lambda e: self.set_graph_type(graph_type))
+                        lambda e: self.update_graph_type(graph_type))
+
+    def layout(self):
+        '''The layout's internal widget.'''
+        self.selector.grid(row=0, column=0)
+        self.info.grid(row=1, column=0)
