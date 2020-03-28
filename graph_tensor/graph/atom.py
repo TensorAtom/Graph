@@ -1,6 +1,6 @@
 '''Some of the actions related to the graph.
 '''
-from tkinter import Canvas, StringVar
+from tkinter import Canvas, StringVar, ttk
 
 
 class Meta(Canvas):
@@ -193,11 +193,15 @@ class Graph(Drawing):
             self.bind('<ButtonRelease-1>', self.delete_graph)
 
 
-class GrgaphLabeled(Graph):
+class GraphLabeled(Graph):
     '''Pin the picture and label it on it.
     '''
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
+        self._set_scroll()
+        self.configure(width=800, height=600)
+        self.configure(xscrollcommand=self.scroll_x.set, yscrollcommand=self.scroll_y.set)
+        self.bind("<3>", self.mouse_motion)
 
     def select_graph(self, event, edit_option):
         self.configure(cursor="target")
@@ -215,3 +219,22 @@ class GrgaphLabeled(Graph):
     def delete_graph(self, event):
         for tag in self.selected_tags:
             self.delete(tag)
+
+    def _set_scroll(self):
+        self.scroll_x = ttk.Scrollbar(self, orient='horizontal')
+        self.scroll_y = ttk.Scrollbar(self, orient='vertical')
+
+    def mouse_motion(self, event):
+        x = event.x
+        y = event.y
+        text = f"coordinate: ({x}, {y})|| {self.canvas.canvasx(x), self.canvas.canvasy(y)}"
+        self.canvas.coord_var.set(text)
+
+    def _scroll_command(self):
+        self.scroll_x['command'] = self.canvas.xview
+        self.scroll_y['command'] = self.canvas.yview
+
+    def layout(self):
+        self.scroll_x.pack(side='top', fill='x')
+        self.pack(side='left', expand='yes', fill='both')
+        self.scroll_y.pack(side='right', fill='y')
