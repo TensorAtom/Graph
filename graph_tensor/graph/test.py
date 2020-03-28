@@ -41,3 +41,21 @@ def test_Drawing():
     selector.layout()
     selector.grid(row=0, column=1, sticky='nwes')
     root.mainloop()
+
+def test_Graph_Window():
+    from .atom import Graph
+    from .creator import SelectorFrame
+    from .window import Window
+    root = Window()
+    selector = SelectorFrame(root)
+    # or TrajectoryDrawing
+    graph = Graph(root, selector, background='lightgray')
+    root.update_edit_menu(graph)
+    root.update_file_menu(graph)
+    # Makes the master widget change as the canvas size
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
+    graph.layout()
+    selector.layout()
+    selector.grid(row=0, column=1, sticky='nwes')
+    root.mainloop()

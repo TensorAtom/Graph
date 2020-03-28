@@ -1,5 +1,6 @@
-
-from tkinter import Canvas
+'''Some of the actions related to the graph.
+'''
+from tkinter import Canvas, StringVar
 
 
 class Meta(Canvas):
@@ -64,6 +65,8 @@ class Meta(Canvas):
 class Drawing(Meta):
     '''Create graphic elements (graph) including rectangular boxes (which can be square points), 
         ovals (circular points), and segments.
+        Press the left mouse button to start painting, release the left 
+            mouse button for the end of the painting.
     '''
 
     def __init__(self, master=None, selector=None, cnf={}, **kw):
@@ -130,8 +133,61 @@ class TrajectoryDrawing(Drawing):
         self.bind("<1>", self.update_xy)
         self.bind("<ButtonRelease-1>", self.update_xy)
         self.bind("<Button1-Motion>", self.draw)
+        
 
-
-class GraphMeta(Drawing):
+class Graph(Drawing):
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
+        self.selected_tags = None
+        self.edit_var = StringVar()
+
+    @property
+    def tags_dict(self):
+        return {
+            'Single element': 'current',
+            'All elements': 'all',
+            'All graphic elements': 'graph',
+            '⬜': 'rectangle',
+            '⚪': 'oval',
+            '⸺': 'line',
+            '⯀': 'rectangle_point',
+            '●': 'oval_point'
+        }
+
+    def move_strides(self, event):
+        x, y = self.x, self.y
+        self.update_xy(event)
+        x_move = self.x - x
+        y_move = self.y - y
+        return x_move, y_move
+
+    def move_graph(self, event):
+        x_move, y_move = self.move_strides(event)
+        self.move(self.selected_tags, x_move, y_move)
+
+    def delete_graph(self, event):
+        self.delete(self.selected_tags)
+
+    def select_graph(self, event, edit_option):
+        self.configure(cursor="target")
+        self.update_xy(event)
+        tags = self.tags_dict[edit_option]
+        if tags == 'current':
+            self.selected_tags = self.find_withtag(tags)
+        else:
+            self.selected_tags = tags
+
+    def bind_graph(self):
+        self.unbind('<ButtonRelease-1>')
+        self.unbind('<1>')
+        edit = self.edit_var.get()
+        if edit == 'drawing':
+            self._draw_bind() # reset bind
+        elif 'move' in edit:
+            self.bind('<1>', lambda event: self.select_graph(
+                event, edit.split('/')[1]))
+            self.bind('<ButtonRelease-1>', self.move_graph)
+        elif 'delete' in edit:
+            self.bind('<1>', lambda event: self.select_graph(
+                event, edit.split('/')[1]))
+            self.bind('<ButtonRelease-1>', self.delete_graph)
