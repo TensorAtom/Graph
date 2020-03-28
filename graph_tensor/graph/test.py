@@ -42,6 +42,7 @@ def test_Drawing():
     selector.grid(row=0, column=1, sticky='nwes')
     root.mainloop()
 
+
 def test_Graph_Window():
     from .atom import GraphLabeled
     from .creator import SelectorFrame
@@ -49,6 +50,7 @@ def test_Graph_Window():
     root = Window()
     selector = SelectorFrame(root)
     graph = GraphLabeled(root, selector, background='lightgray')
+    graph.configure(width=800, height=600)
     root.update_edit_menu(graph)
     root.update_file_menu(graph)
     # Makes the master widget change as the canvas size

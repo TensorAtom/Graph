@@ -198,10 +198,22 @@ class GraphLabeled(Graph):
     '''
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
+        self.coord_var = StringVar()
+        self.coord_label = ttk.Label(self, textvariable = self.coord_var)
         self._set_scroll()
-        self.configure(width=800, height=600)
+        self._scroll_command()
         self.configure(xscrollcommand=self.scroll_x.set, yscrollcommand=self.scroll_y.set)
         self.bind("<3>", self.mouse_motion)
+        self.bind("<Configure>", self.resize)
+        self.update_idletasks()
+        #self.minsize(self.winfo_width(), self.winfo_height())
+
+    def draw(self, event):
+        '''Release the left mouse button to finish painting.'''
+        self.configure(cursor="arrow")
+        bbox = self.get_bbox(event)
+        self.create_graph(bbox)
+        self.coord_var.set(f'coordinate: {bbox[:2]} to {bbox[2:]}')
 
     def select_graph(self, event, edit_option):
         self.configure(cursor="target")
@@ -227,14 +239,19 @@ class GraphLabeled(Graph):
     def mouse_motion(self, event):
         x = event.x
         y = event.y
-        text = f"coordinate: ({x}, {y})|| {self.canvas.canvasx(x), self.canvas.canvasy(y)}"
-        self.canvas.coord_var.set(text)
+        text = f"coordinate: ({x}, {y})|| {self.canvasx(x), self.canvasy(y)}"
+        self.coord_var.set(text)
 
     def _scroll_command(self):
-        self.scroll_x['command'] = self.canvas.xview
-        self.scroll_y['command'] = self.canvas.yview
+        self.scroll_x['command'] = self.xview
+        self.scroll_y['command'] = self.yview
+
+    def resize(self, event):
+        region = self.bbox('all')
+        self.configure(scrollregion=region)
 
     def layout(self):
         self.scroll_x.pack(side='top', fill='x')
         self.pack(side='left', expand='yes', fill='both')
         self.scroll_y.pack(side='right', fill='y')
+        self.coord_label.pack(side='bottom', fill='x')
