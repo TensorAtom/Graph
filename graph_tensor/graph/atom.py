@@ -191,3 +191,27 @@ class Graph(Drawing):
             self.bind('<1>', lambda event: self.select_graph(
                 event, edit.split('/')[1]))
             self.bind('<ButtonRelease-1>', self.delete_graph)
+
+
+class GrgaphLabeled(Graph):
+    '''Pin the picture and label it on it.
+    '''
+    def __init__(self, master,  selector, cnf={}, **kw):
+        super().__init__(master, selector, cnf, **kw)
+
+    def select_graph(self, event, edit_option):
+        self.configure(cursor="target")
+        self.update_xy(event)
+        tags = self.tags_dict[edit_option]
+        image_tags = self.find_withtag('image')
+        selected_tags = self.find_withtag(tags)
+        self.selected_tags = set(selected_tags) - set(image_tags)
+
+    def move_graph(self, event):
+        x_move, y_move = self.move_strides(event)
+        for tag in self.selected_tags:
+            self.move(tag, x_move, y_move)
+
+    def delete_graph(self, event):
+        for tag in self.selected_tags:
+            self.delete(tag)

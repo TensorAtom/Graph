@@ -43,13 +43,12 @@ def test_Drawing():
     root.mainloop()
 
 def test_Graph_Window():
-    from .atom import Graph
+    from .atom import GraphLabled
     from .creator import SelectorFrame
     from .window import Window
     root = Window()
     selector = SelectorFrame(root)
-    # or TrajectoryDrawing
-    graph = Graph(root, selector, background='lightgray')
+    graph = GraphLabled(root, selector, background='lightgray')
     root.update_edit_menu(graph)
     root.update_file_menu(graph)
     # Makes the master widget change as the canvas size
