@@ -6,6 +6,8 @@ The goal is to build a Tensor-based computer graphics library that focuses on th
 
 The graphic elements of this project refer to the **Canvas** of tkinter (Python 3.7 or later). The code implementation principle and the instruction manual can refer to [tutorial](https://github.com/TensorAtom/tutorial/tree/master/Graph/README.md) in this project.
 
+Graph_tensor user manual reference [manual](manual.md).
+
 ## PyPI support available
 
 You can install the latest version using the following command:
@@ -19,6 +21,10 @@ The following command is used when called:
 ```python
 import graph_tensor
 ```
+
+## Contribution
+
+You are welcome to contribute new code. A detailed description of the package can be found in [DeveloperGuide_en](DeveloperGuide_en.md) or [DeveloperGuide_zh](DeveloperGuide_zh.ipynb).
 
 ## Reference
 

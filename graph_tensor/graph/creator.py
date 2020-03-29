@@ -1,4 +1,7 @@
 '''Use help reference at https://www.jianshu.com/p/c6a2b400d0b9
+
+Selector and SelectorFrame are developer-oriented and do not 
+    require users to pay attention to their implementation details.
 '''
 from tkinter import ttk, StringVar
 

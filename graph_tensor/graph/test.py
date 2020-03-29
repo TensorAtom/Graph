@@ -13,14 +13,12 @@ def test_Meta():
         'width': 2,
         'tags': 'test '
     }
-    name = 'oval'
-    color = 'purple'
-    width = 2
     self.draw_graph('line', [20, 20, 100, 200], **kw)
     self.draw_graph('oval', [50, 80, 100, 200], fill='red', **kw)
     self.draw_graph('rectangle', [170, 80, 220, 200], fill='yellow', **kw)
     self.draw_graph('arc', [180, 100, 250, 260],
                     fill='lightblue', style='chord', **kw)
+    self.draw_graph('polygon', [(70, 80), (20, 70), (30, 90)], fill='purple', **kw)
     self.layout(row=0, column=0)
     print(self.gettags(1))
     print(self.find_withtag('graph'))
@@ -44,13 +42,13 @@ def test_Drawing():
 
 
 def test_GraphWindow():
-    from .atom import GraphLabeled
+    from .atom import GraphScrollable
     from .creator import SelectorFrame
     from .window import Window
     root = Window()
     root.geometry('600x800')
     selector = SelectorFrame(root)
-    graph = GraphLabeled(root, selector, background='lightgray')
+    graph = GraphScrollable(root, selector, background='lightgray')
     root.update_edit_menu(graph)
     root.update_file_menu(graph)
     # Makes the master widget change as the canvas size

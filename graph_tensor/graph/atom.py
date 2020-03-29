@@ -26,8 +26,10 @@ class Meta(Canvas):
             Union[int, float] -> (x_0,y_0,x_,y_1), (x_0, y_0) refers to the starting point of 
             the reference brush (i.e., the left mouse button is pressed), and (x_1, y_1) refers to 
             the end position of the reference brush (i.e., release the left mouse button).
+            Multipoint sequences are supported for 'line' and 'polygon',
+             for example ((x_0, y_0), (x_1, y_1), (x_2, y_2)).
         :param graph_type: Types of graphic elements.
-            (str) 'rectangle', 'oval', 'line', 'arc'(That is, segment).
+            (str) 'rectangle', 'oval', 'line', 'arc'(That is, segment), 'polygon'.
             Note that 'line' can no longer pass in the parameter 'fill', and 
             the remaining graph_type cannot pass in the parameter 'outline'.
         :param color: The color of the graphic element.
@@ -43,22 +45,21 @@ class Meta(Canvas):
 
         :return: Unique identifier solely for graphic elements.
         '''
+        if tags is None:
+            if graph_type in ('rectangle', 'oval', 'line', 'arc'):
+                tags = f"graph {graph_type}"
+            else:
+                tags = 'graph'
+
         com_kw = {'width': width, 'tags': tags}
         kw = {**com_kw, 'outline': color}
         line_kw = {**com_kw, 'fill': color}
-
         if graph_type == 'line':
             kwargs.update(line_kw)
         else:
             kwargs.update(kw)
-        if graph_type in ('rectangle', 'oval', 'line', 'arc'):
-            func = eval(f"self.create_{graph_type}")
-            graph_id = func(direction, **kwargs)
-            if tags is None:
-                [self.addtag_withtag(tag, graph_id)
-                 for tag in ('graph', graph_type)]
-        else:
-            graph_id = None
+        func = eval(f"self.create_{graph_type}")
+        graph_id = func(*direction, **kwargs)
         return graph_id
 
 
@@ -133,7 +134,7 @@ class TrajectoryDrawing(Drawing):
         self.bind("<1>", self.update_xy)
         self.bind("<ButtonRelease-1>", self.update_xy)
         self.bind("<Button1-Motion>", self.draw)
-        
+
 
 class Graph(Drawing):
     def __init__(self, master,  selector, cnf={}, **kw):
@@ -182,7 +183,7 @@ class Graph(Drawing):
         self.unbind('<1>')
         edit = self.edit_var.get()
         if edit == 'drawing':
-            self._draw_bind() # reset bind
+            self._draw_bind()  # reset bind
         elif 'move' in edit:
             self.bind('<1>', lambda event: self.select_graph(
                 event, edit.split('/')[1]))
@@ -193,16 +194,18 @@ class Graph(Drawing):
             self.bind('<ButtonRelease-1>', self.delete_graph)
 
 
-class GraphLabeled(Graph):
+class GraphScrollable(Graph):
     '''Pin the picture and label it on it.
     '''
+
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
         self.coord_var = StringVar()
-        self.coord_label = ttk.Label(self, textvariable = self.coord_var)
+        self.coord_label = ttk.Label(self, textvariable=self.coord_var)
         self._set_scroll()
         self._scroll_command()
-        self.configure(xscrollcommand=self.scroll_x.set, yscrollcommand=self.scroll_y.set)
+        self.configure(xscrollcommand=self.scroll_x.set,
+                       yscrollcommand=self.scroll_y.set)
         self.bind("<3>", self.mouse_motion)
         self.bind("<Configure>", self.resize)
         self.update_idletasks()
