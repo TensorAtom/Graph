@@ -105,7 +105,7 @@ class Drawing(Meta):
         '''Release the left mouse button to finish painting.'''
         self.configure(cursor="arrow")
         bbox = self.get_bbox(event)
-        self.create_graph(bbox)
+        return self.create_graph(bbox)
 
     def create_graph(self, bbox):
         '''Create a graphic.
@@ -118,8 +118,7 @@ class Drawing(Meta):
         if cond1 or cond2:
             return
         else:
-            self.draw_graph(self.selector.graph_type.split('_')
-                            [0], bbox, self.selector.color)
+            return self.draw_graph(self.selector.graph_type.split('_')[0], bbox, self.selector.color)
 
     def layout(self, row=0, column=0):
         '''The internal layout.'''
@@ -145,12 +144,13 @@ class TrajectoryDrawing(Drawing):
         self.configure(cursor="arrow")
         self.after(self.after_time)
         bbox = self.get_bbox(event)
-        self.create_graph(bbox)
+        return self.create_graph(bbox)
 
 
 class Graph(Drawing):
     '''Graph is a drawing tool for manipulating graphic objects.
     '''
+
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
         self.selected_tags = None
@@ -217,13 +217,14 @@ class GraphScrollable(Graph):
 
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
+        self.bunch = {} # Data Label Dictionary
         self.coord_var = StringVar()
         self.coord_label = ttk.Label(self, textvariable=self.coord_var)
         self._set_scroll()
         self._scroll_command()
         self.configure(xscrollcommand=self.scroll_x.set,
                        yscrollcommand=self.scroll_y.set)
-        self.bind("<3>", self.mouse_motion)
+        self.bind("<3>", self.show_info)
         self.bind("<Configure>", self.resize)
         self.update_idletasks()
         #self.minsize(self.winfo_width(), self.winfo_height())
@@ -232,8 +233,9 @@ class GraphScrollable(Graph):
         '''Release the left mouse button to finish painting.'''
         self.configure(cursor="arrow")
         bbox = self.get_bbox(event)
-        self.create_graph(bbox)
+        graph_id = self.create_graph(bbox)
         self.coord_var.set(f'coordinate: {bbox[:2]} to {bbox[2:]}')
+        return graph_id
 
     def select_graph(self, event, edit_option):
         self.configure(cursor="target")
@@ -251,12 +253,14 @@ class GraphScrollable(Graph):
     def delete_graph(self, event):
         for tag in self.selected_tags:
             self.delete(tag)
+            self.bunch.pop(tag)
+        self.selector.info.set(self.bunch)
 
     def _set_scroll(self):
         self.scroll_x = ttk.Scrollbar(self, orient='horizontal')
         self.scroll_y = ttk.Scrollbar(self, orient='vertical')
 
-    def mouse_motion(self, event):
+    def show_info(self, event):
         x = event.x
         y = event.y
         text = f"coordinate: ({x}, {y})|| {self.canvasx(x), self.canvasy(y)}"

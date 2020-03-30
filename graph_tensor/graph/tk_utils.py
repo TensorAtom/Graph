@@ -1,4 +1,4 @@
-from tkinter import Tk, StringVar, Menu, filedialog
+from tkinter import Tk, Menu, filedialog
 from PIL import Image, ImageTk
 
 
@@ -71,7 +71,10 @@ class Window(WindowMeta):
         self.file_name = self.seek_filename()
 
     def update_image(self):
-        self.I = self.name2image(self.file_name)
+        if self.file_name:
+            self.I = self.name2image(self.file_name)
+        else:  # Avoid loading empty picture pictures.
+            self.I = None
 
     def reload_image(self, graph):
         graph.create_image(0, 0, anchor='nw', image=self.I, tags='image')
@@ -83,5 +86,4 @@ class Window(WindowMeta):
 
     def update_file_menu(self, graph):
         self.file_bar.add_radiobutton(
-            label="Seek filename", command=lambda : self.load_image(graph))
-
+            label="Seek filename", command=lambda: self.load_image(graph))

@@ -92,14 +92,14 @@ class SelectorFrame(ttk.Frame):
         [self.color_bind(self.selector, color) for color in Selector.colors]
         [self.graph_type_bind(self.selector, graph_type)
          for graph_type in Selector.shapes]
-        self.info_var = StringVar()
-        self.info = ttk.Label(self, textvariable=self.info_var)
+        self.info = StringVar()
+        self.info_label = ttk.Label(self, textvariable=self.info)
 
     def update_info(self):
         '''Update info information.'''
         if self.color or self.graph_type:
             text = f"You Selected: {self.color},{self.graph_type}"
-            self.info_var.set(text)
+            self.info.set(text)
 
     def update_color(self, new_color):
         '''Update color information.'''
@@ -121,4 +121,4 @@ class SelectorFrame(ttk.Frame):
     def layout(self):
         '''The layout's internal widget.'''
         self.selector.grid(row=0, column=0)
-        self.info.grid(row=1, column=0)
+        self.info_label.grid(row=1, column=0)
