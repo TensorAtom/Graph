@@ -40,15 +40,14 @@ def test_Drawing():
     selector.grid(row=0, column=1, sticky='nwes')
     root.mainloop()
 
-
 def test_GraphWindow():
     from .atom import GraphScrollable
     from .creator import SelectorFrame
-    from .window import Window
+    from .tk_utils import Window
     root = Window()
-    root.geometry('600x800')
+    root.geometry('800x600')
     selector = SelectorFrame(root)
-    graph = GraphScrollable(root, selector, background='lightgray')
+    graph = GraphScrollable(root, selector, background='lightgray') # or Graph
     root.update_edit_menu(graph)
     root.update_file_menu(graph)
     # Makes the master widget change as the canvas size

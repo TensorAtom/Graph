@@ -96,7 +96,8 @@ class Drawing(Meta):
 
     def get_bbox(self, event):
         x0, y0 = self.x, self.y  # The upper-left coordinates of the graph
-        x1, y1 = event.x, event.y  # Lower-right coordinates of the graph
+        self.update_xy(event)
+        x1, y1 = self.x, self.y  # Lower-right coordinates of the graph
         bbox = x0, y0, x1, y1
         return bbox
 
@@ -127,16 +128,29 @@ class Drawing(Meta):
 
 class TrajectoryDrawing(Drawing):
     '''Draw based on the mouse's trajectory.
+
+    Click the left mouse button to start painting, move the 
+        left mouse button 'after_time' after the completion of painting.
     '''
 
-    def __init__(self, master,  selector, cnf={}, **kw):
+    def __init__(self, master,  selector, after_time=1000, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
+        self.after_time = after_time
         self.bind("<1>", self.update_xy)
         self.bind("<ButtonRelease-1>", self.update_xy)
         self.bind("<Button1-Motion>", self.draw)
 
+    def draw(self, event):
+        '''Release the left mouse button to finish painting.'''
+        self.configure(cursor="arrow")
+        self.after(self.after_time)
+        bbox = self.get_bbox(event)
+        self.create_graph(bbox)
+
 
 class Graph(Drawing):
+    '''Graph is a drawing tool for manipulating graphic objects.
+    '''
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
         self.selected_tags = None
@@ -192,6 +206,9 @@ class Graph(Drawing):
             self.bind('<1>', lambda event: self.select_graph(
                 event, edit.split('/')[1]))
             self.bind('<ButtonRelease-1>', self.delete_graph)
+
+    def layout(self):
+        self.pack(side='left', expand='yes', fill='both')
 
 
 class GraphScrollable(Graph):
