@@ -2,6 +2,8 @@
 '''
 from tkinter import Canvas, StringVar, ttk
 
+from .sym_graph import Rectangle
+
 
 class Meta(Canvas):
     '''Graphic elements are composed of line(segment), rectangle, ellipse, and arc.
@@ -78,7 +80,6 @@ class Drawing(Meta):
         '''
         super().__init__(master, cnf, **kw)
         self.selector = selector
-
         self._init_params()
         self._draw_bind()
 
@@ -115,10 +116,15 @@ class Drawing(Meta):
         x0, y0, x1, y1 = bbox
         cond1 = x0 == x1 and y0 == y1 and 'point' not in self.selector.graph_type
         cond2 = 'point' in self.selector.graph_type and (x0 != x1 or y0 != y1)
+        kw = {
+            'direction': bbox,
+            'color': self.selector.color,
+            'tags': self.selector.graph_type
+        }
         if cond1 or cond2:
             return
         else:
-            return self.draw_graph(self.selector.graph_type.split('_')[0], bbox, self.selector.color)
+            return self.draw_graph(self.selector.graph_type.split('_')[0], **kw)
 
     def layout(self, row=0, column=0):
         '''The internal layout.'''
@@ -153,7 +159,7 @@ class Graph(Drawing):
 
     def __init__(self, master,  selector, cnf={}, **kw):
         super().__init__(master, selector, cnf, **kw)
-        self.selected_tags = None
+        self._selected_tags = set()
         self.edit_var = StringVar()
 
     @property
@@ -161,7 +167,6 @@ class Graph(Drawing):
         return {
             'Single element': 'current',
             'All elements': 'all',
-            'All graphic elements': 'graph',
             '⬜': 'rectangle',
             '⚪': 'oval',
             '⸺': 'line',
@@ -183,14 +188,21 @@ class Graph(Drawing):
     def delete_graph(self, event):
         self.delete(self.selected_tags)
 
-    def select_graph(self, event, edit_option):
+    @property
+    def selected_tags(self):
+        return self._selected_tags
+
+    @selected_tags.setter
+    def selected_tags(self, tags):
+        if tags == 'current':
+            self._selected_tags = self.find_withtag(tags)
+        else:
+            self._selected_tags = tags
+
+    def select_graph(self, event, tags):
         self.configure(cursor="target")
         self.update_xy(event)
-        tags = self.tags_dict[edit_option]
-        if tags == 'current':
-            self.selected_tags = self.find_withtag(tags)
-        else:
-            self.selected_tags = tags
+        self.selected_tags = tags
 
     def bind_graph(self):
         self.unbind('<ButtonRelease-1>')
@@ -198,15 +210,39 @@ class Graph(Drawing):
         edit = self.edit_var.get()
         if edit == 'drawing':
             self._draw_bind()  # reset bind
-        elif 'move' in edit:
-            self.bind('<1>', lambda event: self.select_graph(
-                event, edit.split('/')[1]))
-            self.bind('<ButtonRelease-1>', self.move_graph)
-        elif 'delete' in edit:
-            self.bind('<1>', lambda event: self.select_graph(
-                event, edit.split('/')[1]))
-            self.bind('<ButtonRelease-1>', self.delete_graph)
+        elif 'move' in edit or 'delete' in edit:
+            tags = self.tags_dict[edit.split('/')[1]]
+            self.bind('<1>', lambda event: self.select_graph(event, tags))
+            if 'move' in edit:
+                self.bind('<ButtonRelease-1>', self.move_graph)
+            elif 'delete' in edit:
+                self.bind('<ButtonRelease-1>', self.delete_graph)
+        elif edit == 'scale':
+            self.bind('<1>', self.set_cursor)
+            self.bind('<ButtonRelease-1>', self.scale_graph)
+        else:
+            NotImplemented
 
+    def scale_graph(self, event):
+        cursor = self.cget('cursor')
+        print(cursor)
+        self.configure(cursor='arrow')
+
+    def set_cursor(self, event):
+        self.update_xy(event)
+        current = self.x, self.y
+        closest_graph = self.find_closest(*current)
+        bbox = self.bbox(closest_graph)
+        if bbox:
+            rect = Rectangle(bbox, radius=5)
+            cursor = rect.get_scope(current, radius=5)
+            if cursor:
+                self.configure(cursor=cursor)
+            else:
+                self.configure(cursor='gumby')
+        else:
+            self.configure(cursor='arrow')
+        
     def layout(self):
         self.pack(side='left', expand='yes', fill='both')
 
@@ -227,7 +263,17 @@ class GraphScrollable(Graph):
         self.bind("<3>", self.show_info)
         self.bind("<Configure>", self.resize)
         self.update_idletasks()
-        #self.minsize(self.winfo_width(), self.winfo_height())
+        #self.bind("<1>", self.set_cursor)
+
+    def draw_label(self, event):
+        graph_id = self.draw(event)
+        if graph_id:
+            self.bunch[graph_id] = []
+            self.selector.info.set(self.bunch)
+
+    def _draw_bind(self):
+        self.bind("<1>", self.update_xy)
+        self.bind("<ButtonRelease-1>", self.draw_label)
 
     def draw(self, event):
         '''Release the left mouse button to finish painting.'''
@@ -237,10 +283,9 @@ class GraphScrollable(Graph):
         self.coord_var.set(f'coordinate: {bbox[:2]} to {bbox[2:]}')
         return graph_id
 
-    def select_graph(self, event, edit_option):
+    def select_graph(self, event, tags):
         self.configure(cursor="target")
         self.update_xy(event)
-        tags = self.tags_dict[edit_option]
         image_tags = self.find_withtag('image')
         selected_tags = self.find_withtag(tags)
         self.selected_tags = set(selected_tags) - set(image_tags)
@@ -252,8 +297,8 @@ class GraphScrollable(Graph):
 
     def delete_graph(self, event):
         for tag in self.selected_tags:
-            self.delete(tag)
             self.bunch.pop(tag)
+            self.delete(tag)
         self.selector.info.set(self.bunch)
 
     def _set_scroll(self):

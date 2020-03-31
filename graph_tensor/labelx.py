@@ -43,31 +43,10 @@ class LabeledGraph(GraphScrollable):
             self.bunch[graph_id] = label
             self.selector.info.set(self.bunch)
 
-    def _draw_bind(self):
-        self.bind("<1>", self.update_xy)
-        self.bind("<ButtonRelease-1>", self.draw_label)
-
-    def bind_graph(self):
-        self.unbind('<ButtonRelease-1>')
-        self.unbind('<1>')
-        edit = self.edit_var.get()
-        if edit == 'drawing':
-            self._draw_bind()  # reset bind
-        elif 'move' in edit:
-            self.bind('<1>', lambda event: self.select_graph(
-                event, edit.split('/')[1]))
-            self.bind('<ButtonRelease-1>', self.move_graph)
-        elif 'delete' in edit:
-            self.bind('<1>', lambda event: self.select_graph(
-                event, edit.split('/')[1]))
-            self.bind('<ButtonRelease-1>', self.delete_graph)
-        else:
-            NotImplemented
-
 
 if __name__ == "__main__":
     root = Window()
     root.geometry('800x600')
     selector = SelectorFrame(root)
-    graph = LabeledGraph(root, selector, background='lightgray')  # or Graph
+    graph = LabeledGraph(root, selector, background='lightgray')  # or GraphScrollable
     root.mainloop()

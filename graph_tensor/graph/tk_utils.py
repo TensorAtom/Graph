@@ -31,8 +31,6 @@ class WindowMeta(Tk):
 
     def _create_file_menu(self):
         self.file_bar = Menu(self.menu_bar)
-        self.image_menu = Menu(self.file_bar)
-        self.tags_menu = Menu(self.file_bar)
         self.menu_bar.add_cascade(label="File", menu=self.file_bar)
 
     def seek_folder_name(self):
@@ -61,12 +59,14 @@ class Window(WindowMeta):
             'variable': graph.edit_var,
             'command': graph.bind_graph
         }
-        self.edit_bar.add_radiobutton(label=f"drawing", **kw_menu)
+        self.edit_bar.add_radiobutton(label="drawing", **kw_menu)
+        self.edit_bar.add_radiobutton(label="scale", **kw_menu)
         [self.move_menu.add_radiobutton(
             label=f"move/{option}", **kw_menu) for option in graph.tags_dict]
         [self.delete_menu.add_radiobutton(
             label=f"delete/{option}", **kw_menu) for option in graph.tags_dict]
-
+        self.scale_menu = Menu(self.menu_bar)
+       
     def update_file(self):
         self.file_name = self.seek_filename()
 
