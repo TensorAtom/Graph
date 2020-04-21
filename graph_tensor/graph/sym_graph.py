@@ -1,4 +1,4 @@
-from sympy.sets.sets import Interval
+from sympy import Interval
 
 
 class Rectangle(dict):
