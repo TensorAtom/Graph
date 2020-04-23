@@ -1,12 +1,13 @@
 from sympy import Interval
 
 
+from sympy import Interval
+
+
 class Rectangle(dict):
     def __init__(self, bbox, *args, **kw):
-        super().__init__(*args, **kw)
-        self.__dict__ = self
-        self.x0, self.y0, self.x1, self.y1 = bbox
-        self.scope_names = {'bottom_left_corner',
+        '''
+        scope_names = {'bottom_left_corner',
             'bottom_right_corner',
             'bottom_side',
             'left_side',
@@ -14,6 +15,11 @@ class Rectangle(dict):
             'top_left_corner',
             'top_right_corner',
             'top_side'}
+        '''
+        super().__init__(*args, **kw)
+        self.__dict__ = self
+        self.bbox = bbox
+        self.x0, self.y0, self.x1, self.y1 = self.bbox
     
     def get_scope(self, point, radius):
         for name in self.scope_names:
@@ -21,6 +27,26 @@ class Rectangle(dict):
             if point in  eval(scope_str)(radius):
                 return name
         return 
+    
+    @property
+    def x_interval(self):
+        return Interval(self.x0, self.x1)
+    
+    @property
+    def y_interval(self):
+        return Interval(self.y0, self.y1)
+
+    @property
+    def w(self):
+        return self.x_interval.measure + 1
+
+    @property
+    def h(self):
+        return self.y_interval.measure + 1
+
+    @property
+    def aspect_ratio(self):
+        return self.w /self.h
     
     def top_left_corner(self, radius):
         x_scope = Interval.Ropen(self.x0, self.x0+radius)
@@ -61,3 +87,12 @@ class Rectangle(dict):
         x_scope = Interval.open(self.x0+radius, self.x1-radius)
         y_scope = Interval.Lopen(self.y1-radius, self.y1)
         return x_scope * y_scope
+
+    @property
+    def aspect(self):
+        return self.x_interval * self.y_interval
+
+    def boundary(self, radius):
+        x_scope = Interval(self.x0+radius, self.x1-radius)
+        y_scope = Interval(self.y0+radius, self.y1-radius)
+        return self.aspect - x_scope * y_scope
