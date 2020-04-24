@@ -4,6 +4,7 @@ Selector and SelectorFrame are developer-oriented and do not
     require users to pay attention to their implementation details.
 '''
 from tkinter import ttk, StringVar
+import json
 
 from .atom import Meta
 
@@ -94,6 +95,8 @@ class SelectorFrame(ttk.Frame):
          for graph_type in Selector.shapes]
         self.info = StringVar()
         self.info_label = ttk.Label(self, textvariable=self.info)
+        self.save_button = ttk.Button(
+            self, text='Save labels', command=self.save_label)
 
     def update_info(self):
         '''Update info information.'''
@@ -118,7 +121,13 @@ class SelectorFrame(ttk.Frame):
         canvas.tag_bind(graph_type, '<1>',
                         lambda e: self.update_graph_type(graph_type))
 
+    def save_label(self):
+        info = self.info.get()
+        with open('cat.json', 'w') as fp:
+            json.dump(info, fp)
+
     def layout(self):
         '''The layout's internal widget.'''
         self.selector.grid(row=0, column=0)
         self.info_label.grid(row=1, column=0)
+        self.save_button.grid(row=2, column=0)

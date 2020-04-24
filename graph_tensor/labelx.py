@@ -1,23 +1,25 @@
-from tkinter import Toplevel, StringVar, ttk
+from tkinter import StringVar, ttk
 
 from graph.atom import GraphScrollable
 from graph.tk_utils import Window
 from graph.creator import SelectorFrame
+from pygui.tkinterx.meta import WindowMeta, showwarning, askokcancel, ask_window
 
 
-class PopupLabel(Toplevel):
+class PopupLabel(WindowMeta):
     def __init__(self, master=None, cnf={}, **kw):
         super().__init__(master, cnf, **kw)
-        self.label = StringVar()
-        self.create_widget()
 
     def create_widget(self):
-        self.tip_text = ttk.Label(self, text='Please enter the label: ')
-        self.label_entry = ttk.Entry(self, textvariable=self.label)
+        self.add_row('Please enter the label: ', 'label')
 
-    def layout(self):
-        self.tip_text.grid(row=0, column=0, sticky='w')
-        self.label_entry.grid(row=0, column=1, sticky='w')
+    def run(self):
+        self.withdraw()
+        label = self.bunch['label'].get()
+        if '' in [label]:
+            showwarning(self)
+        else:
+            askokcancel(self, message='Do you want to confirm the submission?')
 
 
 class LabeledGraph(GraphScrollable):
@@ -31,10 +33,8 @@ class LabeledGraph(GraphScrollable):
         selector.pack(side='right', fill='y')
 
     def set_label(self):
-        popup = PopupLabel(self)
-        popup.layout()
-        self.wait_window(popup)
-        return popup.label.get()
+        bunch = ask_window(self, PopupLabel)
+        return bunch['label'].get()
 
     def draw_label(self, event):
         graph_id = self.draw(event)
