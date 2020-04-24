@@ -1,0 +1,3 @@
+[submodule "graph_tensor/pygui"]
+	path = graph_tensor/pygui
+	url = https://github.com/xinetzone/pygui
